@@ -5,20 +5,20 @@
 
 	<groupId>org.springframework.data</groupId>
 	<artifactId>spring-data-keyvalue</artifactId>
-	<version>1.2.24.BUILD-SNAPSHOT</version>
+	<version>1.2.24-ririnto.1</version>
 
 	<name>Spring Data KeyValue</name>
 
 	<parent>
 		<groupId>org.springframework.data.build</groupId>
 		<artifactId>spring-data-parent</artifactId>
-		<version>1.9.24.BUILD-SNAPSHOT</version>
+		<version>1.9.24-ririnto.1</version>
 		<relativePath/>
 	</parent>
 
 	<properties>
 		<dist.key>DATAKV</dist.key>
-		<springdata.commons>1.13.24.BUILD-SNAPSHOT</springdata.commons>
+		<springdata.commons>1.13.24-ririnto.1</springdata.commons>
 	</properties>
 
 	<dependencies>
