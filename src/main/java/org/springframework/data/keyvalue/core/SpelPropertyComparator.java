@@ -19,6 +19,8 @@ import java.util.Comparator;
 
 import org.springframework.expression.spel.standard.SpelExpression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.SimpleEvaluationContext;
+import org.springframework.util.comparator.NullSafeComparator;
 
 /**
  * {@link Comparator} implementation using {@link SpelExpression}.
@@ -109,18 +111,7 @@ public class SpelPropertyComparator<T> implements Comparator<T> {
 	 */
 	protected String buildExpressionForPath() {
 
-		StringBuilder rawExpression = new StringBuilder(
-				"new org.springframework.util.comparator.NullSafeComparator(new org.springframework.util.comparator.ComparableComparator(), "
-						+ Boolean.toString(this.nullsFirst) + ").compare(");
-
-		rawExpression.append("#arg1?.");
-		rawExpression.append(path != null ? path.replace(".", "?.") : "");
-		rawExpression.append(",");
-		rawExpression.append("#arg2?.");
-		rawExpression.append(path != null ? path.replace(".", "?.") : "");
-		rawExpression.append(")");
-
-		return rawExpression.toString();
+		return String.format("#arg1?.%s", path != null ? path.replace(".", "?.") : "");
 	}
 
 	/*
@@ -130,12 +121,21 @@ public class SpelPropertyComparator<T> implements Comparator<T> {
 	@Override
 	public int compare(T arg1, T arg2) {
 
+		Object value1 = getValue(arg1);
+		Object value2 = getValue(arg2);
+
+		return (nullsFirst ? NullSafeComparator.NULLS_LOW : NullSafeComparator.NULLS_HIGH).compare(value1, value2)
+				* (asc ? 1 : -1);
+	}
+
+	private Object getValue(T arg) {
+
 		SpelExpression expressionToUse = getExpression();
+		SimpleEvaluationContext context = SimpleEvaluationContext.forReadOnlyDataBinding().build();
+		context.setVariable("arg1", arg);
+		expressionToUse.setEvaluationContext(context);
 
-		expressionToUse.getEvaluationContext().setVariable("arg1", arg1);
-		expressionToUse.getEvaluationContext().setVariable("arg2", arg2);
-
-		return expressionToUse.getValue(Integer.class) * (asc ? 1 : -1);
+		return expressionToUse.getValue();
 	}
 
 	/**

@@ -23,6 +23,7 @@ import static org.junit.Assert.*;
 import java.util.Comparator;
 
 import org.junit.Test;
+import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 /**
@@ -102,6 +103,13 @@ public class SpelPropertyComperatorUnitTests {
 
 		Comparator<SomeType> comparator = new SpelPropertyComparator<SomeType>("stringProperty", PARSER).nullsLast();
 		assertThat(comparator.compare(ONE, new SomeType(null, null, 2)), equalTo(-1));
+	}
+
+	@Test(expected = SpelEvaluationException.class)
+	public void shouldNotEvaluateMethodsInPropertyPath() {
+
+		Comparator<SomeType> comparator = new SpelPropertyComparator<SomeType>("stringProperty.toUpperCase()", PARSER);
+		comparator.compare(ONE, TWO);
 	}
 
 	@Test // DATACMNS-525

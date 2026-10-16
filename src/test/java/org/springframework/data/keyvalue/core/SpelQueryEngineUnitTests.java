@@ -32,12 +32,15 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.keyvalue.core.query.KeyValueQuery;
 import org.springframework.data.keyvalue.repository.query.SpelQueryCreator;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.ParametersParameterAccessor;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.parser.PartTree;
+import org.springframework.expression.spel.SpelEvaluationException;
 import org.springframework.expression.spel.support.SimpleEvaluationContext;
 
 /**
@@ -73,6 +76,17 @@ public class SpelQueryEngineUnitTests {
 
 		assertThat((Collection<Person>) engine.execute(createQueryForMethodWithArgs("findByFirstname", "bob"), null, -1,
 				-1, anyString()), contains(BOB_WITH_FIRSTNAME));
+	}
+
+	@Test(expected = SpelEvaluationException.class)
+	public void shouldNotEvaluateMethodsInSortProperty() throws Exception {
+
+		doReturn(people).when(adapter).getAllOf(anyString());
+
+		KeyValueQuery<?> query = new KeyValueQuery<SpelCriteria>(createQueryForMethodWithArgs("findByFirstname", "bob"));
+		query.setSort(new Sort("firstname.toUpperCase()"));
+
+		engine.execute(query, anyString());
 	}
 
 	@Test // DATAKV-114
